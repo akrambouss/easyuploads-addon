@@ -73,11 +73,15 @@ import com.vaadin.ui.Upload.StartedListener;
  * @author Matti Tahvonen
  * 
  */
-@SuppressWarnings({ "serial", "unused" })
+@SuppressWarnings({ "serial" })
 public class UploadField extends CssLayout implements Field, StartedListener,
         FinishedListener, ProgressListener {
     private static final int MAX_SHOWN_BYTES = 5;
-
+    
+    private static final String DEFAULT_WIDTH = "200px";
+    
+    private static final String DEFAULT_BUTTON_CAPTION = "Choose File";
+    
     private UploadFieldReceiver receiver;
 
     private Upload upload;
@@ -86,20 +90,23 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     private ProgressIndicator progress = new ProgressIndicator();
 
     private StorageMode storageMode;
+    
+    private boolean isImmediate;
+    
+    private long maxUploadSize = Long.MAX_VALUE;
 
     public UploadField() {
         this(StorageMode.FILE);
     }
 
     public UploadField(StorageMode mode) {
-        setWidth("200px");
+        setWidth(DEFAULT_WIDTH);
         setStorageMode(mode);
         upload = new Upload(null, receiver);
-        upload.setImmediate(true);
         upload.addListener((StartedListener) this);
         upload.addListener((FinishedListener) this);
         upload.addListener((ProgressListener) this);
-        upload.setButtonCaption("Choose File");
+        setUploadMode(true);
         progress.setVisible(false);
         progress.setPollingInterval(500);
         buildDefaulLayout();
@@ -112,7 +119,35 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     public String getButtonCaption() {
         return upload.getButtonCaption();
     }
+    
+	public void setMaxUploadSize(long maxUploadSize) {
+		this.maxUploadSize = maxUploadSize;
+	}
 
+	/**
+     * Set the upload mode.
+     * 
+     * @param isImmediate true means using the immediate mode to upload, 
+     * 					  otherwise it just like the classic upload style and the upload will not be triggered until called the {@link #submitUpload()} method. 
+     */
+    public void setUploadMode(boolean isImmediate){
+    	this.isImmediate = isImmediate;
+    	upload.setImmediate(isImmediate);
+    	String buttonCaption = isImmediate ? DEFAULT_BUTTON_CAPTION : null;
+    	upload.setButtonCaption(buttonCaption);
+    }
+    
+    /**
+     * Forces the upload widget send selected file to the server.<BR>
+     * Only when the mode is un-immediate, then it can be called.
+     */
+    public void submitUpload(){
+    	if(isImmediate){
+    		throw new IllegalStateException("cannot be called when the upload mode is immediate!");
+    	}
+    	upload.submitUpload();
+    }
+    
     public final CssLayout getRootLayout() {
         return this;
     }
@@ -314,11 +349,14 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     }
 
     public void uploadStarted(StartedEvent event) {
-        progress.setVisible(true);
+    	// make the upload invisible when started
+    	upload.setVisible(false);
+    	progress.setVisible(true);
         progress.setValue(0);
     }
 
     public void uploadFinished(FinishedEvent event) {
+    	upload.setVisible(true);
         progress.setVisible(false);
         lastFileName = event.getFilename();
         updateDisplay();
@@ -384,6 +422,7 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     protected String getDisplayDetails() {
         StringBuilder sb = new StringBuilder();
         sb.append("File: ");
+        //TODO: it may be a security issue if the file name contains cross site script
         sb.append(lastFileName);
         sb.append("</br> <em>");
         Object value = getValue();
@@ -413,7 +452,13 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     }
 
     public void updateProgress(long readBytes, long contentLength) {
-        progress.setValue(readBytes / contentLength);
+    	// if readBytes or contentLength exceed the max upload size, then interrupt it.
+    	if(readBytes > maxUploadSize || contentLength > maxUploadSize){
+    		upload.interruptUpload();
+    		return;
+    	}
+    	
+    	progress.setValue(new Float(readBytes / (float) contentLength));
     }
 
     public void setFileDeletesAllowed(boolean fileDeletesAllowed) {
