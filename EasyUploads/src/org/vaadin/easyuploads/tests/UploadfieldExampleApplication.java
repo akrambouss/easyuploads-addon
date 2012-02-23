@@ -63,6 +63,31 @@ public class UploadfieldExampleApplication extends Application {
         mainWindow.addComponent(b);
         mainWindow.addComponent(hr());
 
+        final UploadField uploadField_nonimmediate = new UploadField();
+        uploadField_nonimmediate.setFieldType(FieldType.FILE);
+        uploadField_nonimmediate.setImmediate(false);
+        uploadField_nonimmediate
+                .setCaption("Non immediate, Storagemode: temp files, fieldType:"
+                        + uploadField_nonimmediate.getFieldType());
+
+        b = new Button("Show value");
+        b.addListener(new Button.ClickListener() {
+            public void buttonClick(ClickEvent event) {
+                Object value = uploadField_nonimmediate.getValue();
+                mainWindow.showNotification("Value:" + value);
+            }
+        });
+        Button submit = new Button("Send file");
+        submit.addListener(new Button.ClickListener() {
+            public void buttonClick(ClickEvent event) {
+                uploadField_nonimmediate.submitUpload();
+            }
+        });
+        mainWindow.addComponent(uploadField_nonimmediate);
+        mainWindow.addComponent(submit);
+        mainWindow.addComponent(b);
+        mainWindow.addComponent(hr());
+
         final UploadField uploadField3 = new UploadField();
         uploadField3.setFieldType(FieldType.FILE);
         uploadField3.setCaption("Storagemode: /Users/Shared/tmp/ , fieldType:"
