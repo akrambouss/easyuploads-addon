@@ -77,11 +77,11 @@ import com.vaadin.ui.Upload.StartedListener;
 public class UploadField extends CssLayout implements Field, StartedListener,
         FinishedListener, ProgressListener {
     private static final int MAX_SHOWN_BYTES = 5;
-    
+
     private static final String DEFAULT_WIDTH = "200px";
-    
+
     private static final String DEFAULT_BUTTON_CAPTION = "Choose File";
-    
+
     private UploadFieldReceiver receiver;
 
     private Upload upload;
@@ -90,9 +90,7 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     private ProgressIndicator progress = new ProgressIndicator();
 
     private StorageMode storageMode;
-    
-    private boolean isImmediate;
-    
+
     private long maxUploadSize = Long.MAX_VALUE;
 
     public UploadField() {
@@ -119,35 +117,43 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     public String getButtonCaption() {
         return upload.getButtonCaption();
     }
-    
-	public void setMaxUploadSize(long maxUploadSize) {
-		this.maxUploadSize = maxUploadSize;
-	}
 
-	/**
+    public void setMaxUploadSize(long maxUploadSize) {
+        this.maxUploadSize = maxUploadSize;
+    }
+
+    /**
      * Set the upload mode.
      * 
-     * @param isImmediate true means using the immediate mode to upload, 
-     * 					  otherwise it just like the classic upload style and the upload will not be triggered until called the {@link #submitUpload()} method. 
+     * @param isImmediate
+     *            true means using the immediate mode to upload, otherwise it
+     *            just like the classic upload style and the upload will not be
+     *            triggered until called the {@link #submitUpload()} method.
      */
-    public void setUploadMode(boolean isImmediate){
-    	this.isImmediate = isImmediate;
-    	upload.setImmediate(isImmediate);
-    	String buttonCaption = isImmediate ? DEFAULT_BUTTON_CAPTION : null;
-    	upload.setButtonCaption(buttonCaption);
+    public void setUploadMode(boolean isImmediate) {
+        super.setImmediate(isImmediate);
+        upload.setImmediate(isImmediate);
+        String buttonCaption = isImmediate ? DEFAULT_BUTTON_CAPTION : null;
+        upload.setButtonCaption(buttonCaption);
     }
-    
+
+    @Override
+    public void setImmediate(boolean immediate) {
+        setUploadMode(immediate);
+    }
+
     /**
      * Forces the upload widget send selected file to the server.<BR>
      * Only when the mode is un-immediate, then it can be called.
      */
-    public void submitUpload(){
-    	if(isImmediate){
-    		throw new IllegalStateException("cannot be called when the upload mode is immediate!");
-    	}
-    	upload.submitUpload();
+    public void submitUpload() {
+        if (isImmediate()) {
+            throw new IllegalStateException(
+                    "cannot be called when the upload mode is immediate!");
+        }
+        upload.submitUpload();
     }
-    
+
     public final CssLayout getRootLayout() {
         return this;
     }
@@ -349,14 +355,14 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     }
 
     public void uploadStarted(StartedEvent event) {
-    	// make the upload invisible when started
-    	upload.setVisible(false);
-    	progress.setVisible(true);
+        // make the upload invisible when started
+        upload.setVisible(false);
+        progress.setVisible(true);
         progress.setValue(0);
     }
 
     public void uploadFinished(FinishedEvent event) {
-    	upload.setVisible(true);
+        upload.setVisible(true);
         progress.setVisible(false);
         lastFileName = event.getFilename();
         updateDisplay();
@@ -422,7 +428,8 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     protected String getDisplayDetails() {
         StringBuilder sb = new StringBuilder();
         sb.append("File: ");
-        //TODO: it may be a security issue if the file name contains cross site script
+        // TODO: it may be a security issue if the file name contains cross site
+        // script
         sb.append(lastFileName);
         sb.append("</br> <em>");
         Object value = getValue();
@@ -452,13 +459,14 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     }
 
     public void updateProgress(long readBytes, long contentLength) {
-    	// if readBytes or contentLength exceed the max upload size, then interrupt it.
-    	if(readBytes > maxUploadSize || contentLength > maxUploadSize){
-    		upload.interruptUpload();
-    		return;
-    	}
-    	
-    	progress.setValue(new Float(readBytes / (float) contentLength));
+        // if readBytes or contentLength exceed the max upload size, then
+        // interrupt it.
+        if (readBytes > maxUploadSize || contentLength > maxUploadSize) {
+            upload.interruptUpload();
+            return;
+        }
+
+        progress.setValue(new Float(readBytes / (float) contentLength));
     }
 
     public void setFileDeletesAllowed(boolean fileDeletesAllowed) {
@@ -592,6 +600,7 @@ public class UploadField extends CssLayout implements Field, StartedListener,
      * 
      * @see com.vaadin.ui.Component.Focusable#focus()
      */
+    @Override
     public void focus() {
         super.focus();
     }
