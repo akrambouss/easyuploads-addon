@@ -27,6 +27,9 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class UploadfieldExampleApplication extends Application {
 
+	private static final String TEMP_FILE_DIR = new File(
+			System.getProperty("java.io.tmpdir")).getPath();
+
     @Override
     public void init() {
         final Window mainWindow = new Window("Easy upload tests");
@@ -90,12 +93,13 @@ public class UploadfieldExampleApplication extends Application {
 
         final UploadField uploadField3 = new UploadField();
         uploadField3.setFieldType(FieldType.FILE);
-        uploadField3.setCaption("Storagemode: /Users/Shared/tmp/ , fieldType:"
+		uploadField3.setCaption("Storagemode: " + TEMP_FILE_DIR
+				+ " , fieldType:"
                 + uploadField3.getFieldType());
 
         uploadField3.setFileFactory(new FileFactory() {
             public File createFile(String fileName, String mimeType) {
-                File f = new File("/Users/Shared/tmp/" + fileName);
+				File f = new File(TEMP_FILE_DIR + fileName);
                 return f;
             }
         });
@@ -239,7 +243,7 @@ public class UploadfieldExampleApplication extends Application {
             }
         };
         multiFileUpload2.setCaption("MultiFileUpload (with root dir)");
-        multiFileUpload2.setRootDirectory("/Users/Shared/tmp/");
+		multiFileUpload2.setRootDirectory(TEMP_FILE_DIR);
         mainWindow.addComponent(multiFileUpload2);
 
         mainWindow.addComponent(hr());
