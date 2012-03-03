@@ -54,6 +54,8 @@ public class UploadfieldExampleApplication extends Application {
         uploadField2.setFieldType(FieldType.FILE);
         uploadField2.setCaption("Storagemode: temp files, fieldType:"
                 + uploadField2.getFieldType());
+        uploadField2.setButtonCaption("Choose file...");
+        uploadField2.setImmediate(true); // default, should not reset caption
 
         b = new Button("Show value");
         b.addListener(new Button.ClickListener() {

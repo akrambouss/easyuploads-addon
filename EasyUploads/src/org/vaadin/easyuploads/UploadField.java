@@ -93,6 +93,8 @@ public class UploadField extends CssLayout implements Field, StartedListener,
 
     private long maxUploadSize = Long.MAX_VALUE;
 
+	private String buttonCaption = DEFAULT_BUTTON_CAPTION;
+
     public UploadField() {
         this(StorageMode.FILE);
     }
@@ -112,10 +114,11 @@ public class UploadField extends CssLayout implements Field, StartedListener,
 
     public void setButtonCaption(String caption) {
         upload.setButtonCaption(caption);
+        buttonCaption = caption;
     }
 
     public String getButtonCaption() {
-        return upload.getButtonCaption();
+        return buttonCaption;
     }
 
     public void setMaxUploadSize(long maxUploadSize) {
@@ -133,7 +136,7 @@ public class UploadField extends CssLayout implements Field, StartedListener,
     public void setUploadMode(boolean isImmediate) {
         super.setImmediate(isImmediate);
         upload.setImmediate(isImmediate);
-        String buttonCaption = isImmediate ? DEFAULT_BUTTON_CAPTION : null;
+        String buttonCaption = isImmediate ? getButtonCaption() : null;
         upload.setButtonCaption(buttonCaption);
     }
 
