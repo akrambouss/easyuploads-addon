@@ -60,6 +60,11 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
     private CssLayout uploads = new CssLayout();
     private String uploadButtonCaption = "...";
 
+    /** number of pending files */
+    private int pendingFilesNo = 0;
+    /** indicates if a file upload is in process */
+    private boolean isInProcess = false;
+
     public MultiFileUpload() {
         setWidth("200px");
         addComponent(progressBars);
@@ -76,6 +81,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
             private LinkedList<ProgressIndicator> indicators;
 
             public void streamingStarted(StreamingStartEvent event) {
+              // issue #10: update file process informations
+              isInProcess = true;
+              pendingFilesNo--;
             }
 
             public void streamingFinished(StreamingEndEvent event) {
@@ -86,6 +94,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
                 handleFile(file, event.getFileName(), event.getMimeType(),
                         event.getBytesReceived());
                 receiver.setValue(null);
+                
+                // issue #10: update file process informations
+                isInProcess = false;
             }
 
             public void streamingFailed(StreamingErrorEvent event) {
@@ -95,6 +106,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
                 for (ProgressIndicator progressIndicator : indicators) {
                     progressBars.removeComponent(progressIndicator);
                 }
+                
+                // issue #10: update file process informations
+                isInProcess = false;
 
             }
 
@@ -103,6 +117,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
                 long contentLength = event.getContentLength();
                 float f = (float) readBytes / (float) contentLength;
                 indicators.get(0).setValue(f);
+                
+                // issue #10: update file process informations
+                isInProcess = true;
             }
 
             public OutputStream getOutputStream() {
@@ -113,6 +130,11 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
             }
 
             public void filesQueued(Collection<FileDetail> pendingFileNames) {
+              // issue #10: update file process informations
+              if (pendingFileNames == null) pendingFilesNo = 0;
+              else pendingFilesNo = pendingFileNames.size();
+              
+              
                 if (indicators == null) {
                     indicators = new LinkedList<ProgressIndicator>();
                 }
@@ -191,9 +213,8 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
         }
     }
 
-    
     private DragAndDropWrapper dropZone;
-
+    
     /** indicates if the drop zone should be visible or not */
     private boolean dropZoneVisible = true;
 
@@ -209,6 +230,13 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
      */
     public void setDropZoneVisible(boolean dropZoneVisible) {
       this.dropZoneVisible = dropZoneVisible;
+    }
+
+    /** Returns if a file upload is in progress or if there are files are pending.
+     * @return true if a file upload is in progress or if there are files are pending
+     */
+    public boolean isInProcess() {
+      return (isInProcess || pendingFilesNo > 0);
     }
 
     /**
