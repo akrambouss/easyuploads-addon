@@ -191,13 +191,31 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
         }
     }
 
+    
     private DragAndDropWrapper dropZone;
+
+    /** indicates if the drop zone should be visible or not */
+    private boolean dropZoneVisible = true;
+
+    /** Returns the dropZoneVisible attribute.
+     * @return the dropZoneVisible.
+     */
+    public boolean isDropZoneVisible() {
+      return dropZoneVisible;
+    }
+
+    /** Sets the dropZoneVisible attribute to the specified value.
+     * @param dropZoneVisible the new dropZoneVisible value
+     */
+    public void setDropZoneVisible(boolean dropZoneVisible) {
+      this.dropZoneVisible = dropZoneVisible;
+    }
 
     /**
      * Sets up DragAndDropWrapper to accept multi file drops.
      */
     private void prepareDropZone() {
-        if (dropZone == null) {
+        if (dropZone == null && isDropZoneVisible()) {
             Component label = new Label(getAreaText(), Label.CONTENT_XHTML);
             label.setSizeUndefined();
             dropZone = new DragAndDropWrapper(label);
