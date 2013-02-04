@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +66,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
     private int pendingFilesNo = 0;
     /** indicates if a file upload is in process */
     private boolean isInProcess = false;
+    
+    /** all registered {@link UploadActionListener} */
+    private List<UploadActionListener> uploadListeners = new Vector<UploadActionListener>();
 
     public MultiFileUpload() {
         setWidth("200px");
@@ -73,6 +78,49 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
         prepareUpload();
     }
 
+    /** Adds the specified {@link UploadActionListener}.
+     *  All registered {@link UploadActionListener} will be inform about file upload actions.
+     *  Please do also remove your listener to preventing memory leaks.<p />
+     *  If the listener is already registered nothing will be do. 
+     * @param l the listener to add
+     */
+    public void addUploadActionListener(UploadActionListener l) {
+      if (!uploadListeners.contains(l)) uploadListeners.add(l);
+    }
+    
+    /** Removes the specified {@link UploadActionListener}.
+     *  The {@link UploadActionListener} will be not longer informed about file upload actions.
+     *  If the listener is not registered nothing will be do. 
+     * @param l the listener to remove
+     */
+    public void removeUploadActionListener(UploadActionListener l) {
+      uploadListeners.remove(l);
+    }
+    
+    /** Notified all registered {@link UploadActionListener} about a new started upload process.
+     */
+    private void notifyUploadStart(String file, int pendingFiles) {
+      for (UploadActionListener l : uploadListeners) {
+        l.fileUploadStarted(file, pendingFiles);
+      }
+    }
+    
+    /** Notified all registered {@link UploadActionListener} about a finished upload process.
+     */
+    private void notifyUploadFinished(String file, int pendingFiles) {
+      for (UploadActionListener l : uploadListeners) {
+        l.fileUploadFinished(file, pendingFiles);
+      }
+    }
+    
+    /** Notified all registered {@link UploadActionListener} about a aborted upload process.
+     */
+    private void notifyUploadError(String file, int pendingFiles) {
+      for (UploadActionListener l : uploadListeners) {
+        l.fileUploadError(file, pendingFiles);
+      }
+    }
+    
     private void prepareUpload() {
         final FileBuffer receiver = createReceiver();
 
@@ -84,6 +132,8 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
               // issue #10: update file process informations
               isInProcess = true;
               pendingFilesNo--;
+              
+              notifyUploadStart(event.getFileName(), pendingFilesNo);
             }
 
             public void streamingFinished(StreamingEndEvent event) {
@@ -97,6 +147,8 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
                 
                 // issue #10: update file process informations
                 isInProcess = false;
+                
+                notifyUploadFinished(event.getFileName(), pendingFilesNo);
             }
 
             public void streamingFailed(StreamingErrorEvent event) {
@@ -109,7 +161,8 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
                 
                 // issue #10: update file process informations
                 isInProcess = false;
-
+                
+                notifyUploadError(event.getFileName(), pendingFilesNo);
             }
 
             public void onProgress(StreamingProgressEvent event) {
@@ -347,4 +400,5 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
         }
 
     }
+    
 }
