@@ -62,6 +62,9 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
     private CssLayout uploads = new CssLayout();
     private String uploadButtonCaption = "...";
 
+    /** text of the drop zone area */
+    private String areaText = "<small>DROP<br/>FILES</small>";
+    
     /** number of pending files */
     private int pendingFilesNo = 0;
     /** indicates if a file upload is in process */
@@ -309,8 +312,19 @@ public abstract class MultiFileUpload extends CssLayout implements DropHandler {
         }
     }
 
-    protected String getAreaText() {
-        return "<small>DROP<br/>FILES</small>";
+    /** Returns the area text of the drop zone.
+     * @return area text of the drop zone
+     */
+    public String getAreaText() {
+        return areaText;
+    }
+
+    /** Sets the area text of the drop zone.
+     * @param areaText area text of the drop zone; can be contains HTML code; sample: 
+     *  "<pre><small>DROP<br/>FILES</small></pre>"
+     */
+    public void setAreaText(String areaText) {
+        this.areaText = areaText;
     }
 
     protected boolean supportsFileDrops() {
