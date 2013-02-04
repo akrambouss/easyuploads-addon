@@ -48,7 +48,8 @@ public class VMultiUpload extends SimplePanel implements Paintable {
 				// IE and user has clicked on hidden textarea part of upload
 				// field. Manually open file selector, other browsers do it by
 				// default.
-				fireNativeClick(fu.getElement());
+// stewert: fixes #11 (comment out next line)
+//				fireNativeClick(fu.getElement());
 				// also remove focus to enable hack if user presses cancel
 				// button
 				fireNativeBlur(fu.getElement());

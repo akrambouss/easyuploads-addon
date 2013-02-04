@@ -147,13 +147,17 @@ public class MultiUpload extends AbstractComponent {
 
     public static final class FileDetail {
         private String caption;
-        private String mimeType = "todo/todo";
+        private String mimeType;
         private int parseInt;
 
         public FileDetail(String data) {
             String[] split = data.split("---xXx---");
             caption = split[1];
             parseInt = Integer.parseInt(split[0]);
+            if (split.length >= 3) mimeType = split[2];
+            else mimeType = "application/octet-stream"; // default mime type (see at http://stackoverflow.com/questions/1176022/unknown-file-type-mime)
+            
+            mimeType = "image/jpeg";
         }
 
         public long getContentLength() {
